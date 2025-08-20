@@ -336,6 +336,7 @@
         // --- Form Submission Logic ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            saveFormState();
             submitBtn.disabled = true;
             submitBtn.textContent = 'Processing...';
             statusDiv.style.display = 'none';
