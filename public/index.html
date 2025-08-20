@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factorial AutoFill</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 2rem 0;
+        }
+
+        .main-layout {
+            display: flex;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1600px;
+            padding: 2rem;
+            box-sizing: border-box;
+            flex-grow: 1;
+        }
+        
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            flex: 1;
+        }
+
+        /* Form styles */
+        h1 { text-align: center; color: #007A5A; }
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+        input, textarea { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+        textarea { resize: vertical; min-height: 100px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .optional-shift { border-left: 3px solid #007A5A; padding-left: 1rem; margin-top: 1rem; }
+        .optional-shift label { color: #555; font-weight: 500; }
+        button { width: 100%; padding: 1rem; background-color: #007A5A; color: white; border: none; border-radius: 6px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+        button:hover { background-color: #005c44; }
+        button:disabled { background-color: #999; cursor: not-allowed; }
+        .status { margin-top: 1.5rem; text-align: center; font-weight: bold; padding: 1rem; border-radius: 6px; display: none; }
+        .status.success { background-color: #e6f9f1; color: #007A5A; }
+        .status.error { background-color: #fdeaea; color: #d93025; }
+
+        /* Help section styles */
+        .help-section h2 { color: #333; text-align: center; margin-bottom: 1.5rem; }
+        .help-section h3 { color: #007A5A; margin-top: 1.5rem; }
+        .help-content ol, .help-content ul { padding-left: 1.5rem; }
+        .help-content li { margin-bottom: 0.5rem; }
+
+        /* Footer styles */
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #777;
+            font-size: 0.9rem;
+            width: 100%;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        /* Holiday list styles */
+        .holidays-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fcfcfc;
+        }
+
+        .holidays-section h3 {
+            margin-top: 0;
+        }
+        
+        #holidays-list {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        #holidays-list li {
+            background-color: #e6f9f1;
+            color: #007A5A;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        
+        #holidays-list li .delete-btn {
+            background: none;
+            border: none;
+            color: #007A5A;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 10px;
+            padding: 0;
+            font-size: 1rem;
+            transition: color 0.2s;
+        }
+
+        #holidays-list li .delete-btn:hover {
+            color: #d93025;
+        }
+
+        .add-holiday-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .add-holiday-group input {
+            flex-grow: 1;
+        }
+        
+        .add-holiday-group button {
+            width: auto;
+            white-space: nowrap;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 900px) {
+            .main-layout {
+                flex-direction: column;
+                padding: 1rem;
+            }
+            .container {
+                max-width: 100%;
+            }
+            body {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-layout">
+        <div class="container form-section">
+            <h1>Factorial AutoFill 🤖</h1>
+            <form id="filler-form">
+                <div class="form-group">
+                    <label for="cookie">Cookie de Sesión</label>
+                    <textarea id="cookie" name="cookie" required placeholder="Pega aquí el valor completo de la Cookie..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Rango de Fechas</label>
+                    <div class="grid-2">
+                        <input type="date" id="dateFrom" name="dateFrom" required>
+                        <input type="date" id="dateTo" name="dateTo" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Horario Lunes a Jueves</label>
+                    <div class="grid-2">
+                        <input type="time" id="l_j_in_1" name="l_j_in_1" required>
+                        <input type="time" id="l_j_out_1" name="l_j_out_1" required>
+                    </div>
+                    <div class="optional-shift">
+                        <label>2º Turno (Opcional)</label>
+                        <div class="grid-2">
+                            <input type="time" id="l_j_in_2" name="l_j_in_2">
+                            <input type="time" id="l_j_out_2" name="l_j_out_2">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Horario Viernes</label>
+                    <div class="grid-2">
+                        <input type="time" id="v_in_1" name="v_in_1" required value="09:00">
+                        <input type="time" id="v_out_1" name="v_out_1" required value="15:00">
+                    </div>
+                </div>
+
+                <button type="submit" id="submit-btn">Rellenar Horas</button>
+                <div id="status" class="status"></div>
+
+                <div class="holidays-section">
+                    <h3>Días Festivos & Vacaciones 🗓️</h3>
+                    <ul id="holidays-list"></ul>
+                    <div class="add-holiday-group">
+                        <input type="date" id="add-holiday-input">
+                        <button id="add-holiday-btn" type="button">Añadir</button>
+                    </div>
+                    <p class="note">Aquí puedes añadir tus vacaciones para evitar fichar en esos días.</p>
+                </div>
+            </form>
+        </div>
+
+        <div class="container help-section">
+            <h2>Ayuda y Guía ℹ️</h2>
+            <div class="help-content">
+                <h3>1. Obtener la Cookie</h3>
+                <p>Para obtener la cookie de sesión, sigue estos pasos:</p>
+                <ol>
+                    <li>Inicia sesión en Factorial.</li>
+                    <li>Abre las herramientas de desarrollador (F12 o Ctrl+Shift+I).</li>
+                    <li>Ve a la pestaña **"Network"** (o "Red").</li>
+                    <li>Filtra por Fetch/XHR y busca por Name la petición con nombre <strong>token</strong></li>
+                    <li>En la pestaña de Headers busca Cookie, copia su valor y pégalo en el campo <strong>Cookie de Sesión</strong>.</li>
+                </ol>
+                <img src="https://i.imgur.com/pL6J7mG.png" alt="Obtener Cookie de Sesión" style="max-width: 100%; border-radius: 8px;">
+                <h3>2. Cómo funciona</h3>
+                <p>Factorial AutoFill utiliza la cookie de tu sesión para hacer una petición a la API de Factorial y rellenar automáticamente las horas de un rango de fechas. Asegúrate de que las fechas y horas sean correctas antes de rellenar.</p>
+                <h3>3. ¿Por qué 2 turnos?</h3>
+                <p>Puedes usar los dos turnos para fichar la entrada y salida de la mañana y de la tarde. Por ejemplo:</p>
+                <ul>
+                    <li>Turno 1: 09:00 - 14:00 (Mañana)</li>
+                    <li>Turno 2: 15:00 - 18:00 (Tarde)</li>
+                </ul>
+                <p>Si no necesitas un segundo turno, simplemente déjalo en blanco. Factorial AutoFill lo ignorará.</p>
+                <h3>Notas</h3>
+                <ul>
+                    <li>La herramienta no rellenará las horas para aquellos días indicados como festivos o vacaciones.</li>
+                    <li>La cookie de sesión caduca pasado un tiempo, por lo que es posible que necesites actualizarla la próxima vez que utilices esta herramienta.</li>
+                    <li>Para evitar meteduras de pata, revisa siempre los datos antes de enviar y no hagas fichajes para periodos muy largos.</li>
+                    <li>Si te equivocas fichando, el borrado de fichajes es manual y debe hacerse desde la interfaz de Factorial.</li>
+                    <li>Revisa que tus fichajes se hayan realizado correctamente en Factorial.</li>
+                    <li>No almacenamos ninguna información personal ni datos sensibles en el servidor. No empleamos ninguna base de datos. Toda la información se almacena en el navegador.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <p class="footer">Creado por José Chumillas</p>
+
+    <script>
+        const form = document.getElementById('filler-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const statusDiv = document.getElementById('status');
+        const formFields = [
+            'cookie', 'dateFrom', 'dateTo', 
+            'l_j_in_1', 'l_j_out_1', 'l_j_in_2', 'l_j_out_2', 
+            'v_in_1', 'v_out_1'
+        ];
+
+        // Holiday DOM Elements
+        const holidaysList = document.getElementById('holidays-list');
+        const addHolidayInput = document.getElementById('add-holiday-input');
+        const addHolidayBtn = document.getElementById('add-holiday-btn');
+        let holidays = [];
+
+        // --- LocalStorage Logic ---
+        function saveFormState() {
+            const formData = new FormData(form);
+            formData.forEach((value, key) => {
+                localStorage.setItem(key, value);
+            });
+            console.log("💾 Form state saved.");
+        }
+
+        function loadFormState() {
+            formFields.forEach(fieldId => {
+                const savedValue = localStorage.getItem(fieldId);
+                if (savedValue) {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        field.value = savedValue;
+                    }
+                }
+            });
+            console.log("✅ Form state loaded.");
+        }
+        
+        // --- Holidays Logic ---
+        async function loadHolidays() {
+            const savedHolidays = localStorage.getItem('holidays');
+            if (savedHolidays) {
+                holidays = JSON.parse(savedHolidays);
+                console.log("✅ Holidays loaded from localStorage.");
+            } else {
+                try {
+                    const response = await fetch('/holidays');
+                    holidays = await response.json();
+                    saveHolidays();
+                    console.log("📥 Holidays loaded from server and saved.");
+                } catch (error) {
+                    console.error("❌ Error fetching holidays from server:", error);
+                    holidays = [];
+                }
+            }
+            renderHolidays();
+        }
+
+        function saveHolidays() {
+            localStorage.setItem('holidays', JSON.stringify(holidays.sort()));
+        }
+
+        function renderHolidays() {
+            holidaysList.innerHTML = '';
+            holidays.forEach(date => {
+                const li = document.createElement('li');
+                li.textContent = date;
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'x';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.dataset.date = date;
+                li.appendChild(deleteBtn);
+                holidaysList.appendChild(li);
+            });
+        }
+        
+        addHolidayBtn.addEventListener('click', () => {
+            const date = addHolidayInput.value;
+            if (date && !holidays.includes(date)) {
+                holidays.push(date);
+                saveHolidays();
+                renderHolidays();
+                addHolidayInput.value = '';
+            }
+        });
+
+        holidaysList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-btn')) {
+                const dateToDelete = e.target.dataset.date;
+                holidays = holidays.filter(date => date !== dateToDelete);
+                saveHolidays();
+                renderHolidays();
+            }
+        });
+
+        // --- Form Submission Logic ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+            statusDiv.style.display = 'none';
+
+            const data = {
+                cookie: document.getElementById('cookie').value,
+                dateFrom: document.getElementById('dateFrom').value,
+                dateTo: document.getElementById('dateTo').value,
+                hoursMonThurs: [
+                    { clock_in: document.getElementById('l_j_in_1').value, clock_out: document.getElementById('l_j_out_1').value },
+                    { clock_in: document.getElementById('l_j_in_2').value, clock_out: document.getElementById('l_j_out_2').value }
+                ],
+                hoursFri: [
+                    { clock_in: document.getElementById('v_in_1').value, clock_out: document.getElementById('v_out_1').value }
+                ],
+                holidays,
+            };
+            
+            try {
+                const response = await fetch('/fill-hours', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Unknown server error.');
+                }
+                
+                showStatus(result.message, 'success');
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Rellenar Horas';
+            }
+        });
+
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadHolidays();
+            loadFormState();
+        });
+    </script>
+</body>
+</html>
