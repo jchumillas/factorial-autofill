@@ -3,6 +3,7 @@ import express from 'express';
 import axios from 'axios';
 import moment from 'moment';
 import cors from 'cors';
+import path from 'path';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -134,6 +135,10 @@ app.post('/fill-hours', async (req, res) => {
 
 app.get('/holidays', (req, res) => {
   res.status(200).json(holidaysStatic);
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // --- Start server ---
